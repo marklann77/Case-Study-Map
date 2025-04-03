@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Interactive Map with Region Zoom</title>
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
+  <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+  <style>
+    body { margin: 0; padding: 0; }
+    #map { position: absolute; top: 40px; bottom: 0; width: 100%; }
+    #region-select {
+      position: absolute;
+      top: 5px;
+      left: 10px;
+      z-index: 999;
+      padding: 5px;
+      font-size: 16px;
+    }
+    .popup-content img {
+      width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .popup-content a {
+      display: inline-block;
+      margin-top: 5px;
+      color: #0077cc;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+<select id="region-select">
+  <option value="">Select a region</option>
+  <option value="northeast">Northeast</option>
+  <option value="south">South</option>
+  <option value="midwest">Midwest</option>
+  <option value="west">West</option>
+</select>
+
+<div id="map"></div>
+
+<script>
+  const map = new maplibregl.Map({
+    container: 'map',
+    style: {
+      version: 8,
+      sources: {
+        osm: {
+          type: 'raster',
+          tiles: ['https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'],
+          tileSize: 256,
+          attribution: '© OpenStreetMap contributors'
+        }
+      },
+      layers: [{
+        id: 'osm-tiles',
+        type: 'raster',
+        source: 'osm'
+      }]
+    },
+    center: [-98.5, 39.8],
+    zoom: 4
+  });
+
+  const projects = [
+    {
+      name: "New York City",
+      coords: [-74.006, 40.7128],
+      image: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/New_york_times_square-terabass.jpg/320px-New_york_times_square-terabass.jpg",
+      link: "nyc-case.html"
+    },
+    {
+      name: "Atlanta",
+      coords: [-84.388, 33.749],
+      image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/Atlanta_Skyline_and_Midtown.jpg/320px-Atlanta_Skyline_and_Midtown.jpg",
+      link: "atlanta-case.html"
+    },
+    {
+      name: "Chicago",
+      coords: [-87.6298, 41.8781],
+      image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Downtown_Chicago_seen_from_John_Hancock_Center.jpg/320px-Downtown_Chicago_seen_from_John_Hancock_Center.jpg",
+      link: "chicago-case.html"
+    }
+  ];
+
+  projects.forEach(project => {
+    const popupHTML = `
+      <div class="popup-content">
+        <h3>${project.name}</h3>
+        <img src="${project.image}" alt="${project.name}">
+        <a href="${project.link}" target="_blank">Read case study</a>
+      </div>
+    `;
+
+    new maplibregl.Marker()
+      .setLngLat(project.coords)
+      .setPopup(new maplibregl.Popup().setHTML(popupHTML))
+      .addTo(map);
+  });
+
+  const regionBounds = {
+    northeast: {
+      center: [-73.5, 42.8],
+      zoom: 5.5
+    },
+    south: {
+      center: [-85.5, 33.0],
+      zoom: 5.5
+    },
+    midwest: {
+      center: [-89.4, 41.2],
+      zoom: 5
+    },
+    west: {
+      center: [-119.5, 37.2],
+      zoom: 5
+    }
+  };
+
+  document.getElementById('region-select').addEventListener('change', function () {
+    const region = this.value;
+    if (region && regionBounds[region]) {
+      map.flyTo({
+        center: regionBounds[region].center,
+        zoom: regionBounds[region].zoom
+      });
+    }
+  });
+</script>
+
+</body>
+</html>
+
+
+
+
+
